@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISchemm.MP4Support", "ISchemm.MP4Support\ISchemm.MP4Support.csproj", "{EC22F866-EAB1-4C7A-BC27-AEA29F0F5C18}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ISchemm.MP4Support.Tests", "ISchemm.MP4Support.Tests\ISchemm.MP4Support.Tests.fsproj", "{A1D67045-BE53-4E97-8738-361E7E132F2F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC22F866-EAB1-4C7A-BC27-AEA29F0F5C18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC22F866-EAB1-4C7A-BC27-AEA29F0F5C18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC22F866-EAB1-4C7A-BC27-AEA29F0F5C18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC22F866-EAB1-4C7A-BC27-AEA29F0F5C18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1D67045-BE53-4E97-8738-361E7E132F2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1D67045-BE53-4E97-8738-361E7E132F2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1D67045-BE53-4E97-8738-361E7E132F2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1D67045-BE53-4E97-8738-361E7E132F2F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C930851-F345-479C-A220-6CEE4D4E10A3}
+	EndGlobalSection
+EndGlobal
