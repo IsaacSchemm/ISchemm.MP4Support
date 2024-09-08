@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<Authors>Isaac Schemm</Authors>
-		<PackageLicenseExpression>CC0</PackageLicenseExpression>
+		<PackageLicenseExpression>CC0-1.0</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://github.com/IsaacSchemm/ISchemm.MP4Support</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/IsaacSchemm/ISchemm.MP4Support</RepositoryUrl>
