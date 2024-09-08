@@ -57,16 +57,3 @@ let readTrackHeader source atom =
         .GetResult()
 
 let epoch = DateTimeOffset.Parse("1904-01-01T00:00:00Z")
-
-let limitBytesRead (limit: int64) (source: IMetadataSource) =
-    let mutable bytesRead = 0L
-    {
-        new IMetadataSource with
-            member _.Dispose() = ()
-            member _.GetRangeAsync(startIndex, endIndex) =
-                let len = endIndex - startIndex
-                bytesRead <- bytesRead + len
-                if bytesRead > 1024 then
-                    Assert.Fail("More than a kilobyte of data read")
-                source.GetRangeAsync(startIndex, endIndex)
-    }

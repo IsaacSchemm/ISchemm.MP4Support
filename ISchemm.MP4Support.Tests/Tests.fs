@@ -5,14 +5,13 @@ open System.Text
 open Microsoft.VisualStudio.TestTools.UnitTesting
 open ISchemm.MP4Support.MetadataSources
 open ISchemm.MP4Support.Atoms
+open ISchemm.MP4Support
 
 [<TestClass>]
 type Tests() =
     [<TestMethod>]
     member _.TestMP4() =
-        let source =
-            MetadataSource.FromFile("../../../demo.mp4")
-            |> limitBytesRead 1024
+        let source = MetadataSource.FromFile("../../../demo.mp4")
 
         let topLevelAtoms = enumerateRootAtoms source
 
@@ -40,7 +39,7 @@ type Tests() =
 
         [movieHeader] |> shouldBe [
             let mutable atom = new MovieHeader32()
-            atom.Duration <- (TimeSpan.Parse("0:00:02.484").TotalSeconds * float timeScale) |> int32 |> bi32
+            atom.Duration <- (TimeSpan.Parse("0:00:02.484").TotalSeconds * float timeScale) |> uint32 |> bu32
             atom.Header <-
                 let mutable header = new AtomHeader32()
                 header.BoxType <- ascii32 "mvhd"
@@ -126,11 +125,21 @@ type Tests() =
             atom
         ]
 
+        let result = MP4MetadataProvider.GetMetadataAsync(source).GetAwaiter().GetResult()
+
+        [result] |> shouldBe [
+            let mutable res = new MP4Metadata()
+            res.HasAudio <- true
+            res.HasVideo <- true
+            res.Width <- Nullable 640
+            res.Height <- Nullable 360
+            res.Duration <- Nullable (TimeSpan.Parse("0:00:02.484"))
+            res
+        ]
+
     [<TestMethod>]
     member _.TestMOV() =
-        let source =
-            MetadataSource.FromFile("../../../demo.mov")
-            |> limitBytesRead 1024
+        let source = MetadataSource.FromFile("../../../demo.mov")
 
         let topLevelAtoms = enumerateRootAtoms source
 
@@ -183,15 +192,12 @@ type Tests() =
 
     [<TestMethod>]
     member _.TestMP4ExtendedLength() =
-        let source =
-            [|
-                yield! Convert.FromBase64String "AAAAHGZ0eXBpc29tAAIAAGlzb21pc28ybXA0MQAAAAFtZGF0AAAAAAFBrUs="
-                yield! Array.zeroCreate<byte> 21081403
-                yield! Convert.FromHexString "00000008"
-                yield! Encoding.ASCII.GetBytes "demo"
-            |]
-            |> MetadataSource.FromByteArray
-            |> limitBytesRead 1024
+        let source = MetadataSource.FromByteArray [|
+            yield! Convert.FromBase64String "AAAAHGZ0eXBpc29tAAIAAGlzb21pc28ybXA0MQAAAAFtZGF0AAAAAAFBrUs="
+            yield! Array.zeroCreate<byte> 21081403
+            yield! Convert.FromHexString "00000008"
+            yield! Encoding.ASCII.GetBytes "demo"
+        |]
 
         let topLevelAtoms = enumerateRootAtoms source
 
@@ -202,12 +208,11 @@ type Tests() =
         ]
 
     [<TestMethod>]
-    member _.TestISMA() =
+    member _.TestISMAPartial() =
         let source =
             "AAAAIGZ0eXBpc21sAAAAAWlzbWxwaWZmaXNvMmlzb20AAAJdbW9vdgAAAHhtdmhkAQAAAAAAAADioqd3AAAAAOKip3cAmJaAAAAAMndso9UAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbQAAAbV0cmFrAAAAaHRraGQBAAAHAAAAAOKip3cAAAAA4qKndwAAAGwAAAAAAAAAMndso9UAAAAAAAAAAAAAAAABAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAFFbWRpYQAAACxtZGhkAQAAAAAAAADioqd3AAAAAOKip3cAmJaAAAAAMndso9UVxwAAAAAAIWhkbHIAAAAAAAAAAHNvdW4AAAAAAAAAAAAAAAAAAAAA8G1pbmYAAAAQc21oZAAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAAtHN0YmwAAABoc3RzZAAAAAAAAAABAAAAWG1wNGEAAAAAAAAAAQAAAAAAAAAAAAIAEAAAAABdwAAAAAAANGVzZHMAAAAAAyYAAAAEFEAVAAYAAAIOqgAB9AAFBRMQVuWYBgECQwNlbmdDA2VuZwAAABBzdHRzAAAAAAAAAAAAAAAQc3RzYwAAAAAAAAAAAAAAFHN0c3oAAAAAAAAAAAAAAAAAAAAQc3RjbwAAAAAAAAAAAAAAKG12ZXgAAAAgdHJleAAAAAAAAABsAAAAAQAAAAAAAAAAAAEAAA=="
             |> Convert.FromBase64String
             |> MetadataSource.FromByteArray
-            |> limitBytesRead 1024
 
         let topLevelAtoms = enumerateRootAtoms source
 
@@ -237,8 +242,8 @@ type Tests() =
 
         [movieHeader] |> shouldBe [
             let mutable atom = new MovieHeader64()
-            atom.CreationTime <- (creationTime - epoch).TotalSeconds |> int64 |> bi64
-            atom.Duration <- (duration.TotalSeconds * float timeScale) |> int64 |> bi64
+            atom.CreationTime <- (creationTime - epoch).TotalSeconds |> uint64 |> bu64
+            atom.Duration <- (duration.TotalSeconds * float timeScale) |> uint64 |> bu64
             atom.Header <-
                 let mutable header = new AtomHeader32()
                 header.BoxType <- ascii32 "mvhd"
@@ -250,7 +255,7 @@ type Tests() =
                 matrix.D <- bu32 0x10000u
                 matrix.W <- bu32 0x40000000u
                 matrix
-            atom.ModificationTime <- (modificationTime - epoch).TotalSeconds |> int64 |> bi64
+            atom.ModificationTime <- (modificationTime - epoch).TotalSeconds |> uint64 |> bu64
             atom.NextTrackID <- bu32 109u
             atom.Rate <- bi32 0x10000
             atom.TimeScale <- bi32 timeScale
@@ -294,12 +299,11 @@ type Tests() =
         ]
 
     [<TestMethod>]
-    member _.TestISMV() =
+    member _.TestISMVPartial() =
         let source =
             "AAAAIGZ0eXBpc21sAAAAAWlzbWxwaWZmaXNvMmlzb20AAAKsbW9vdgAAAHhtdmhkAQAAAAAAAADioqd3AAAAAOKip3cAmJaAAAAAMndtDAAAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZQAAAgR0cmFrAAAAaHRraGQBAAAHAAAAAOKip3cAAAAA4qKndwAAAGQAAAAAAAAAMndtDAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAUAAAAC0AAAAAAGUbWRpYQAAACxtZGhkAQAAAAAAAADioqd3AAAAAOKip3cAmJaAAAAAMndtDABVxAAAAAAAIWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAAAAAAABP21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAP9zdGJsAAAAs3N0c2QAAAAAAAAAAQAAAKNhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAUAAtABIAAAASAAAAAAAAAABCU1FRElBS0lORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAAOWF2Y0MBTUAN/+EAImdNQA2WUoKDPz4DagICAoAAAAMAgAAAGXBgAMNQBhl3OAUBAARo7zyAAAAAFGJ0cnQAAMMAAAYagAAE4gAAAAAQc3R0cwAAAAAAAAAAAAAAEHN0c2MAAAAAAAAAAAAAABRzdHN6AAAAAAAAAAAAAAAAAAAAEHN0Y28AAAAAAAAAAAAAAChtdmV4AAAAIHRyZXgAAAAAAAAAZAAAAAEAAAAAAAAAAAABAAA="
             |> Convert.FromBase64String
             |> MetadataSource.FromByteArray
-            |> limitBytesRead 1024
 
         let topLevelAtoms = enumerateRootAtoms source
 
@@ -329,8 +333,8 @@ type Tests() =
 
         [movieHeader] |> shouldBe [
             let mutable atom = new MovieHeader64()
-            atom.CreationTime <- (creationTime - epoch).TotalSeconds |> int64 |> bi64
-            atom.Duration <- (duration.TotalSeconds * float timeScale) |> int64 |> bi64
+            atom.CreationTime <- (creationTime - epoch).TotalSeconds |> uint64 |> bu64
+            atom.Duration <- (duration.TotalSeconds * float timeScale) |> uint64 |> bu64
             atom.Header <-
                 let mutable header = new AtomHeader32()
                 header.BoxType <- ascii32 "mvhd"
@@ -342,7 +346,7 @@ type Tests() =
                 matrix.D <- bu32 0x10000u
                 matrix.W <- bu32 0x40000000u
                 matrix
-            atom.ModificationTime <- (modificationTime - epoch).TotalSeconds |> int64 |> bi64
+            atom.ModificationTime <- (modificationTime - epoch).TotalSeconds |> uint64 |> bu64
             atom.NextTrackID <- bu32 101u
             atom.Rate <- bi32 0x10000
             atom.TimeScale <- bi32 timeScale
@@ -384,4 +388,87 @@ type Tests() =
             atom.Version <- 1uy
             atom.Width <- bi32 (320 <<< 16)
             atom
+        ]
+
+    [<TestMethod>]
+    member _.TestHTTP() =
+        let source =
+            "https://ia801405.us.archive.org/6/items/SampleVideo1280x7205mb/SampleVideo_1280x720_5mb.mp4"
+            |> Uri
+            |> MetadataSource.FromUri
+
+        let topLevelAtoms = enumerateRootAtoms source
+
+        topLevelAtoms |> shouldBe [
+            locator 0 (header32 "ftyp" 0x20u)
+            locator 32 (header32 "free" 0x8u)
+            locator 40 (header32 "mdat" 0x4fe4cbu)
+            locator 5235955 (header32 "mdat" 0x8u)
+            locator 5235963 (header32 "moov" 0x45fdu)
+        ]
+
+        let nextLevelAtoms = enumerateAtoms source topLevelAtoms[4]
+
+        nextLevelAtoms |> shouldBe [
+            locator 5235971 (header32 "mvhd" 0x6cu)
+            locator 5236079 (header32 "trak" 0x1959u)
+            locator 5242568 (header32 "trak" 0x2bd0u)
+            locator 5253784 (header32 "udta" 0x60u)
+        ]
+
+        let movieHeader = readMovieHeader source nextLevelAtoms[0]
+
+        [movieHeader.CreationTime] |> shouldBe [DateTimeOffset.UnixEpoch]
+        [movieHeader.ModificationTime] |> shouldBe [DateTimeOffset.Parse("2014-07-19T17:22:11Z")]
+        [movieHeader.Duration] |> shouldBe [TimeSpan.Parse("00:00:29.568")]
+
+        let videoTrackAtoms = enumerateAtoms source nextLevelAtoms[1]
+        videoTrackAtoms |> shouldBe [
+            locator 5236087 (header32 "tkhd" 0x5cu)
+            locator 5236179 (header32 "edts" 0x24u)
+            locator 5236215 (header32 "mdia" 0x18d1u)
+        ]
+
+        let videoTrackHeader = readTrackHeader source videoTrackAtoms[0]
+
+        [videoTrackHeader.Volume] |> shouldBe [0f]
+        [videoTrackHeader.Width] |> shouldBe [1280]
+        [videoTrackHeader.Height] |> shouldBe [720]
+
+        let audioTrackAtoms = enumerateAtoms source nextLevelAtoms[2]
+        audioTrackAtoms |> shouldBe [
+            locator 5242576 (header32 "tkhd" 0x5cu)
+            locator 5242668 (header32 "edts" 0x24u)
+            locator 5242704 (header32 "mdia" 0x2b48u)
+        ]
+
+        let audioTrackHeader = readTrackHeader source audioTrackAtoms[0]
+
+        [audioTrackHeader.Volume] |> shouldBe [1f]
+        [audioTrackHeader.Width] |> shouldBe [0]
+        [audioTrackHeader.Height] |> shouldBe [0]
+
+    [<TestMethod>]
+    member _.TestStopReading() =
+        let interiorSource = MetadataSource.FromFile("../../../demo.m4a")
+
+        let source = {
+            new IMetadataSource with
+                member _.Dispose() = ()
+                member _.GetRangeAsync(startIndex, endIndex) =
+                    if endIndex > 1015 then
+                        Assert.Fail("Read past headers")
+                    interiorSource.GetRangeAsync(startIndex, endIndex)
+        }
+
+        let result = MP4MetadataProvider.GetMetadataAsync(source).GetAwaiter().GetResult()
+
+        [result] |> shouldBe [
+            let mutable res = new MP4Metadata()
+            res.HasAudio <- true
+            res.HasVideo <- false
+            res.Width <- Nullable()
+            res.Height <- Nullable()
+            res.Duration <- Nullable (TimeSpan.Parse("0:00:01.227"))
+            res
         ]
