@@ -5,7 +5,13 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ISchemm.MP4Support", "ISchemm.MP4Support\ISchemm.MP4Support.csproj", "{EC22F866-EAB1-4C7A-BC27-AEA29F0F5C18}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ISchemm.MP4Support.Tests", "ISchemm.MP4Support.Tests\ISchemm.MP4Support.Tests.fsproj", "{A1D67045-BE53-4E97-8738-361E7E132F2F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ISchemm.MP4Support.Tests", "ISchemm.MP4Support.Tests\ISchemm.MP4Support.Tests.fsproj", "{A1D67045-BE53-4E97-8738-361E7E132F2F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{70FE2A1F-B1DA-4E08-B332-E07945B72FB9}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
