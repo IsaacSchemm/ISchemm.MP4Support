@@ -10,10 +10,10 @@ namespace ISchemm.MP4Support.Atoms {
         public byte FlagsA;
         public byte FlagsB;
         public byte FlagsC;
-        public BigEndianInt64 CreationTime;
-        public BigEndianInt64 ModificationTime;
+        public BigEndianUInt64 CreationTime;
+        public BigEndianUInt64 ModificationTime;
         public BigEndianInt32 TimeScale;
-        public BigEndianInt64 Duration;
+        public BigEndianUInt64 Duration;
         public BigEndianInt32 Rate;
         public BigEndianInt16 Volume;
         public byte ReservedA01;
@@ -33,7 +33,7 @@ namespace ISchemm.MP4Support.Atoms {
         public BigEndianUInt32 NextTrackID;
 
         private static readonly DateTime MacintoshEpoch =
-            new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            new(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         readonly DateTimeOffset IMovieHeader.CreationTime =>
             MacintoshEpoch.AddSeconds(CreationTime.Value);
